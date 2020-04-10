@@ -1,0 +1,40 @@
+{
+  "name": "markdown-it-reddit-supsubscript",
+  "version": "1.0.0",
+  "description": "Reddit style super/sub scripts for markdown-it by ${Mr.DJA}.",
+  "main": "./src/index.js",
+  "scripts": {
+    "start": "npx webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iMrDJAi/markdown-it-reddit-supsubscript.git"
+  },
+  "keywords": [
+    "markdown",
+    "markdown-it",
+    "markdown-it-plugin",
+    "markdown supscript subscript",
+	"reddit superscript",
+    "supscript",
+    "subscript"
+  ],
+  "author": {
+    "name": "${Mr.DJA}",
+    "email": "imrdjai@yahoo.com",
+    "discord": "https://invite.gg/MrDJA"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/iMrDJAi/markdown-it-reddit-supsubscript/issues"
+  },
+  "homepage": "https://github.com/iMrDJAi/markdown-it-reddit-supsubscript#readme",
+  "devDependencies": {
+    "webpack": "^4.20.2",
+    "webpack-cli": "^3.1.2"
+  },
+  "dependencies": {
+    "markdown-it": "^10.0.0",
+    "markdown-it-regexp": "^0.4.0"
+  }
+}
