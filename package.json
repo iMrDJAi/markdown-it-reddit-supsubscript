@@ -1,6 +1,6 @@
 {
   "name": "markdown-it-reddit-supsubscript",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Reddit's super/subscript syntax for markdown-it by ${Mr.DJA}.",
   "main": "./src/index.js",
   "scripts": {
