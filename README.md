@@ -2,131 +2,88 @@
 # markdown-it-reddit-supsubscript
 [![npm](https://img.shields.io/npm/v/markdown-it-reddit-supsubscript?color=red)](https://www.npmjs.com/package/markdown-it-reddit-supsubscript)
 
-Reddit style super/sub scripts for markdown-it by ${Mr.DJA}.
+Reddit's super/subscript syntax for markdown-it by ${Mr.DJA}.
 ***
 
->This is a plugin for [markdown-it](https://github.com/markdown-it/markdown-it) uses [markdown-it-regexp](https://github.com/rlidwka/markdown-it-regexp) to render superscripts like those on Reddit: `^superscript` `^(superscript)`, and subscripts with a similar syntax: `~superscript` `~(superscript)`.
->
->In fact Reddit doesn't support subscripts, but people need them so they are available here. Smart move huh? \^-^
+This is a plugin for [markdown-it](https://github.com/markdown-it/markdown-it) uses [markdown-it-regexp](https://github.com/GerHobbelt/markdown-it-regexp) to render superscripts like those on Reddit: `^superscript` `^(superscript)`, and subscripts with a similar syntax: `~superscript` `~(superscript)`.
 
-## Install:
-**Node.js**:
-To install the plugin simply use this command:
+In fact Reddit doesn't support subscripts, but people need them so they are available here. Smart move huh? \^-^
+
+> ### ⚠ A note about v2.0.0:
+>
+> This version introduces breaking changes, it has a completely new API and uses a different implementation. The plugin doesn't depend on markdown-it directly anymore, instead, it uses the method `.renderInline()` from the `md` object that is already passed as an argument to the plugin function. Also, it depends on the fork `@gerhobbelt/markdown-it-regexp` now since it's more advanced than the original project.
+>
+> It's highly recommended to upgrade! The previous version is functional but not suitable for production use.
+
+## Installation
+**From NPM**:
+
 ```bash
 npm install markdown-it-reddit-supsubscript --save
 ```
-Then simply require it:
 ```js
-const markdownitRedditSupSubScript = require("markdown-it-reddit-supsubscript");
-// => object
+const markdownItRedditSupsubscript = require("markdown-it-reddit-supsubscript")
 ```
-This method will work on Node, but it can also work on browser after compiling it using [Webpack](https://webpack.js.org/guides/getting-started/).
+This works on Node. Use a module bundler if you want it for browser.
 
 **Browser**:
 
-A pre-compiled version for browser is available on [JsDeliver CDN](https://cdn.jsdelivr.net/gh/iMrDJAi/markdown-it-reddit-supsubscript/dist/main.js):
+A pre-built version for browser is available over [JsDeliver CDN](https://cdn.jsdelivr.net/gh/iMrDJAi/markdown-it-reddit-supsubscript/dist/markdown-it-reddit-supsubscript.min.js):
 ```html
-<script src='https://cdn.jsdelivr.net/gh/iMrDJAi/markdown-it-reddit-supsubscript/dist/main.js'></script>
+<script src='https://cdn.jsdelivr.net/gh/iMrDJAi/markdown-it-reddit-supsubscript/dist/markdown-it-reddit-supsubscript.min.js'></script>
 ```
-It will be declared as `window.markdownitRedditSupSubScript`:
+It will be available as `window.markdownItRedditSupsubscript`:
 ```js
-const markdownitRedditSupSubScript = window.markdownitRedditSupSubScript;
-// => object
+const markdownItRedditSupsubscript = window.markdownItRedditSupsubscript
 ```
 
-## Usage:
+> ⚠ Warning!
+>
+> The previous version used a different name for the plugin: `markdownitRedditSupSubScript`. Make sure to update it to `markdownItRedditSupsubscript` when upgrading!
 
-You will see these methods and properties on the returned object:
-
-| Name | Description |
-|:--:|:--:|
-| supsubscript | An array with the needed plugins to render sup/subscripts |
-| supsubscript[0] | Will deal with `^(supscript)` |
-| supsubscript[1] | Will deal with `~(subscript)` |
-| supsubscript[2] | Will deal with `^supscript ~subscript` |
-| nestedRenderer | This is required to render the nested tags |
-| env | This is needed to enable references from outside | 
-
-This is a simple example:
+## Usage
+The usage is way simpler than it was in v1.0.0:
 
 ```js
-const markdownit = require('markdown-it'); //Our markdown renderer
-const markdownitRedditSupSubScript = require('markdown-it-reddit-supsubscript'); //Our package
+const markdownit = require('markdown-it')
+const markdownItRedditSupsubscript = require('markdown-it-reddit-supsubscript')
 
-function renderMarkdown(text) { //A function to render markdown from a given string
+const options = { // Default options. Use `false` to disable unwanted rules
+    superscriptParenthesized: true, // To enable ^(superscript)
+    superscript: true, // To enable ^superscript
+    subscriptParenthesized: true, // To enable ~(supscript)
+    subscript: true // To enable ~supscript
+}
 
-    //This will deal with references
-    let env = {};
-    markdownit('zero').enable('reference').parse(text, env);
-    markdownitRedditSupSubScript.env = env;
+const md = markdownit.use(
+    markdownItRedditSupsubscript, // Plugin
+    options // Options are not required
+)
 
-    //The main renderer
-    var mdRender = markdownit({
-        linkify: true,
-    }).use(markdownitRedditSupSubScript.supsubscript[0])
-    .use(markdownitRedditSupSubScript.supsubscript[1])
-    .use(markdownitRedditSupSubScript.supsubscript[2]); //Sup/subscripts enabled
-
-    return mdRender.render(text); //Render Markdown!
+function renderMarkdown(text) { // A function to convert markdown to html
+    return md.render(text)
 }
 ```
 
 Preview:
 
-![image](https://i.imgur.com/xvmvU9H.png)
-
-A more advanced example:
-
-```js
-const markdownit = require('markdown-it'); //Our markdown renderer
-const markdownitIns = require('markdown-it-ins'); //Another optional plugin
-const markdownitRedditSupSubScript = require('markdown-it-reddit-spoiler'); //Our package
-
-function renderMarkdown(text) { //A function to render markdown from a given string
-
-    //This will deal with references
-    let env = {};
-    markdownit('zero').enable('reference').parse(text, env);
-    markdownitRedditSupSubScript.env = env;
-
-    //This one is for customizing the nested tags renderer
-    markdownitRedditSupSubScript.nestedRenderer = function () {
-        let renderer = markdownit({
-             linkify: true,
-        }).disable('table').disable('list').disable('heading')
-        .disable('lheading').disable('fence').disable('blockquote')
-        .disable('code').disable('hr').disable('image')
-        .use(markdownitIns); //Now markdownitIns will work inside Sup/subscripts
-        return renderer;
-    }
-
-    //The main renderer
-    var mdRender = markdownit({
-        linkify: true,
-    }).use(markdownitIns)
-    .use(markdownitRedditSupSubScript.supsubscript[0])
-    .use(markdownitRedditSupSubScript.supsubscript[1])
-    .use(markdownitRedditSupSubScript.supsubscript[2]); //Sup/subscripts enabled
-
-    return mdRender.render(text); //Render Markdown!
-}
-```
-
-Preview:
-
-![image](https://i.imgur.com/oG3ewN5.png)
+![image](https://i.imgur.com/dMS8cAW.png)
 
 **Enjoy <3**.
 
-## Dependents Projects:
+## Dependents Projects
 Wanna use **markdown-it-reddit-supsubscript** on your next big project? Let me now and it will be listed here! :)
 
 - [iMrDJAi-MDE](https://github.com/iMrDJAi/iMrDJAi-MDE): Open source, Simple, Easy to use and fully featured Markdown editor - by me.
 
-## Notes:
-- This package has made by [${Mr.DJA}](https://invite.gg/MrDJA).
-- Do you like it? Gimme a star ⭐ and I'll smile 😃.
+## Notes
+- This package has made by [${Mr.DJA}](https://github.com/iMrDJAi).
+- Do you like it? Gimme a star ⭐ and I'll smile 😃.  
+[![GitHub Repo stars](https://img.shields.io/github/stars/iMrDJAi/markdown-it-reddit-supsubscript?style=social)](https://github.com/iMrDJAi/markdown-it-reddit-supsubscript)
 - You are free to suggest anything and I will try to add it soon if I found it useful.
 - If you found any mistake (including the README file) feel free to help to fix it.
 - Please report any bugs.
 - **Made with ❤ in Algeria 🇩🇿**.
+
+## License
+[MIT](https://github.com/iMrDJAi/markdown-it-reddit-supsubscript/blob/master/LICENSE) © [iMrDJAi](https://github.com/iMrDJAi)

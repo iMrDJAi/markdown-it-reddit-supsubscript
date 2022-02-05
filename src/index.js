@@ -1,62 +1,53 @@
-const markdownit = require('markdown-it');
-const markdownitRegexp = require('markdown-it-regexp');
+const markdownitRegexp = require('@gerhobbelt/markdown-it-regexp').default
 
-(function () {
-
-    function markdownit_reddit_supsubscript() {
-
-        var object = {};
-
-        object.env = {}; //Environment sandbox for links/images references
-
-        object.nestedRenderer = function () { //Function to render nested tags
-            return markdownit({
-                linkify: true,
-            }).disable('table').disable('list').disable('heading').disable('lheading').disable('fence').disable('blockquote').disable('code').disable('hr').disable('image');
-        };
-
-        object.supsubscript = [ 
-
-            markdownitRegexp( //^(supscript)
-                /\^\(((?:\[[^\]]*\]\([^)]*\)|[\s\S])+?)\)/,
-                function (match) {
-                    const html = object.nestedRenderer().render(match[1], object.env);
-                    return `<sup>${html.replace(/\<p\>|\<\/p\>\s/g, '')}</sup>`;
-                }
-            ),
-
-            markdownitRegexp( //~(subscript)
-                /\~\(((?:\[[^\]]*\]\([^)]*\)|[\s\S])+?)\)/,
-                function (match) {
-                    const html = object.nestedRenderer().render(match[1], object.env);
-                    return `<sub>${html.replace(/\<p\>|\<\/p\>\s/g, '')}</sub>`;
-                }
-            ),
-
-            markdownitRegexp( //^supscript ~subscript
-                /([\^|\~])((?:\[[^\]]*\]\([^)]*\)|[\S])+)/,
-                function (match) {
-                    if (match[1] === '^') {
-                        const html = object.nestedRenderer().render(match[2], object.env);
-                        return `<sup>${html.replace(/\<p\>|\<\/p\>\s/g, '')}</sup>`;
-                    }
-                    if (match[1] === '~') {
-                        const html = object.nestedRenderer().render(match[2], object.env);
-                        return `<sub>${html.replace(/\<p\>|\<\/p\>\s/g, '')}</sub>`;
-                    }
-                }
-            )
-    
-        ]
-
-        return object;
+function markdownItRedditSupsubscript(md, options) {
+    if (!options) options = {
+        superscriptParenthesized: true,
+        superscript: true,
+        subscriptParenthesized: true,
+        subscript: true
     }
 
-    if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-        module.exports = markdownit_reddit_supsubscript();
-    }
-    if (typeof window === 'object') {
-        window.markdownitRedditSupSubScript = markdownit_reddit_supsubscript();
+    const tags = {
+        superscriptParenthesized: { //^(superscript)
+            regex: /\^\(((?:\[[^\]]*\]\([^)]*\)|[\s\S])+?)\)/,
+            name: 'sup'
+        },
+        superscript: { //^superscript
+            regex: /\^((?:\[[^\]]*\]\([^)]*\)|[\S])+)/,
+            name: 'sup'
+        },
+        subscriptParenthesized: { //~(subscript)
+            regex: /\~\(((?:\[[^\]]*\]\([^)]*\)|[\s\S])+?)\)/,
+            name: 'sub'
+        },
+        subscript: { //~subscript
+            regex: /\~((?:\[[^\]]*\]\([^)]*\)|[\S])+)/,
+            name: 'sub'
+        }
     }
 
-})();
+    const ids = Object.keys(tags)
+
+    const replacer = tag => function (match, _config, _pluginOptions, env) {
+        md.disable('image').disable(ids, true)
+        const html = md.renderInline(match[1], env)
+        md.enable('image').enable(ids, true)
+        return `<${tag}>${html}</${tag}>`
+    }
+
+    ids.forEach(id => {
+        if (!options[id]) return
+        const tag = tags[id]
+        const plugin = markdownitRegexp(
+            tag.regex,
+            {
+                replacer: replacer(tag.name),
+                pluginId: id
+            }
+        )
+        md.use(plugin)
+    })
+}
+
+module.exports = markdownItRedditSupsubscript
